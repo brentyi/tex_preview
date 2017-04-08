@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+<head>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.css" integrity="sha384-wITovz90syo1dJWVh32uuETPVEtGigN07tkttEqPv+uR2SE/mbQcG7ATL28aI9H0" crossorigin="anonymous">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js" integrity="sha384-/y1Nn9+QQAipbNQWU65krzJralCnuOasHncUFXGkdwntGeSvQicrYkiUBwsgUqc1" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ace.js"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+body, html {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+}
+#editor_wrapper {
+    position: absolute;
+    top: 50%;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+#editor {
+    width: 100%;
+    height: 100%;
+    font-size: 1.1em;
+}
+#output_wrapper {
+    position: absolute;
+    top: 0;
+    bottom: 50%;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 1.2em;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+#output {
+    margin: auto;
+    padding: 2em;
+    width: 100%;
+    position: absolute;
+}
+#error {
+    color: #e00;
+}
+@media (min-width: 960px) {
+    #editor_wrapper {
+        top: 0;
+        left: 50%;
+    }
+    #output_wrapper {
+        bottom: 0;
+        right: 50%;
+    }
+}
+</style>
+</head>
+<body>
+    <section id="editor_wrapper">
+        <div id="editor">\begin{aligned}
+    a^2 + b^2 &= c^2\\
+\end{aligned}</div>
+    </section>
+    <section id="output_wrapper">
+        <div id="output"></div>
+    </section>
+
+    <script>
+    $(function() {
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.getSession().setMode("ace/mode/latex");
+        editor.setKeyboardHandler("ace/keyboard/vim");
+        editor.setOption("showInvisibles", true);
+        editor.renderer.setScrollMargin(15, 15);
+        console.log(editor.getValue());
+
+        var updateTimeout;
+        var render = function() {
+            try {
+                katex.render(editor.getValue(), $("#output")[0], {
+                    displayMode: true,
+                    throwOnError: false
+                });
+            } catch(e) {
+                e = String(e);
+                if (e.startsWith("ParseError: KaTeX parse error: ")) {
+                    e = e.substring(31);
+                }
+                $('#output').html('<span id="error">' + e + '</span>');
+            }
+        }
+        render();
+        editor.on("change", function(data) {
+            console.log(data);
+            clearTimeout(updateTimeout);
+            updateTimeout = setTimeout(render, 200);
+        });
+    });
+    </script>
+</body>
+</html>
