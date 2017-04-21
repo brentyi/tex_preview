@@ -6,6 +6,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js" integrity="sha384-/y1Nn9+QQAipbNQWU65krzJralCnuOasHncUFXGkdwntGeSvQicrYkiUBwsgUqc1" crossorigin="anonymous"></script>
 <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ace.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.1.4/js.cookie.js"></script>
 
 <style>
 * {
@@ -48,6 +49,12 @@ body, html {
 }
 #error {
     color: #e00;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 1em;
+    text-align: center;
 }
 @media (min-width: 960px) {
     #editor_wrapper {
@@ -63,45 +70,69 @@ body, html {
 </head>
 <body>
     <section id="editor_wrapper">
-        <div id="editor">\begin{aligned}
-    a^2 + b^2 &= c^2\\
-\end{aligned}</div>
+        <div id="editor"></div>
     </section>
     <section id="output_wrapper">
         <div id="output"></div>
+        <div id="error"></div>
     </section>
 
     <script>
     $(function() {
+
         var editor = ace.edit("editor");
         editor.setTheme("ace/theme/monokai");
+        var content = Cookies.get('texpreview_content');
+        if (content == undefined) {
+            editor.setValue('\\begin{aligned}\n    a^2 + b^2 &= c^2\\\\\n\\end{aligned}', -1);
+        } else {
+            editor.setValue(content, -1);
+        }
+
         editor.getSession().setMode("ace/mode/latex");
         editor.setKeyboardHandler("ace/keyboard/vim");
-        editor.setOption("showInvisibles", true);
+        editor.setOptions({
+            "showInvisibles": true,
+            "highlightSelectedWord": true,
+            "showPrintMargin": false
+        });
+        editor.setBehavioursEnabled(false);
         editor.renderer.setScrollMargin(15, 15);
         console.log(editor.getValue());
 
-        var updateTimeout;
         var render = function() {
             try {
-                katex.render(editor.getValue(), $("#output")[0], {
+                var content = editor.getValue();
+                var html = katex.renderToString(content, {
                     displayMode: true,
                     throwOnError: false
                 });
+                $('#error').text('');
+                $('#output').html(html);
             } catch(e) {
                 e = String(e);
                 if (e.startsWith("ParseError: KaTeX parse error: ")) {
                     e = e.substring(31);
                 }
-                $('#output').html('<span id="error">' + e + '</span>');
+                $('#error').text(e);
             }
         }
         render();
+
         editor.on("change", function(data) {
+            Cookies.set('texpreview_content', editor.getValue(), {expires: 365});
             console.log(data);
-            clearTimeout(updateTimeout);
-            updateTimeout = setTimeout(render, 200);
+            render();
         });
+
+        setInterval(function() {
+            var content = Cookies.get('texpreview_content');
+            if (content !== editor.getValue()) {
+                var pos = editor.session.selection.toJSON();
+                editor.session.setValue(content);
+                editor.session.selection.fromJSON(pos);
+            }
+        }, 250);
     });
     </script>
 </body>
