@@ -56,6 +56,18 @@ body, html {
     padding: 1em;
     text-align: center;
 }
+
+/* nicer katex fractions */
+.mfrac{
+    font-size: 0.9em;
+}
+.mfrac .vlist span:nth-child(1){
+    transform: translateY(-0.05em);
+}
+.mfrac .vlist span:nth-child(3){
+    transform: translateY(0.05em);
+}
+
 @media (min-width: 960px) {
     #editor_wrapper {
         top: 0;
