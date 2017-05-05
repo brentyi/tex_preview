@@ -133,7 +133,7 @@ body, html {
 
         setInterval(function() {
             var content = Cookies.get('texpreview_content');
-            if (content !== editor.getValue()) {
+            if (content != undefined && content !== editor.getValue()) {
                 var pos = editor.session.selection.toJSON();
                 editor.session.setValue(content);
                 editor.session.selection.fromJSON(pos);
