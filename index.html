@@ -76,7 +76,7 @@ body, html {
 
 .easy-autocomplete {
     position: absolute;
-    z-index: 9999;
+    z-index: 999;
     right: 0.5em;
     bottom: 0.5em;
 }
@@ -84,13 +84,26 @@ body, html {
     font-family: sans-serif;
 }
 .easy-autocomplete-container {
-    bottom: 1.5em;
+    bottom: 2em;
 }
 #page_name {
     border: 1px solid #ccc;
     color: #888;
     padding: 0.2em;
     font-size: 1.5em;
+}
+button.delete_page {
+    position: absolute;
+    z-index: 9999;
+    right: 0.5em;
+    background: none;
+    border: 0;
+    color: #700;
+    cursor: pointer;
+    padding: 0;
+}
+button.delete_page:hover {
+    color: #a00;
 }
 </style>
 </head>
@@ -106,8 +119,9 @@ body, html {
 
     <script>
     $(function() {
-        var page_name = 'default';
         var page_list = Cookies.getJSON('texpreview_pagelist') || ['default'];
+        var page_name = page_list[0];
+        $('#page_name').val(page_name);
         var autocomplete_options;
 
         var editor = ace.edit("editor");
@@ -149,7 +163,7 @@ body, html {
         }
         render();
 
-        editor.on("change", function(data) {
+        editor.on('change', function(data) {
             Cookies.set('texpreview_content_' + page_name, editor.getValue(), {expires: 365});
             render();
 
@@ -159,7 +173,8 @@ body, html {
                     page_list.push(page_name);
                     Cookies.set('texpreview_pagelist', page_list);
                     autocomplete_options.data = page_list;
-                    $("#page_name").easyAutocomplete(autocomplete_options);
+                    $('#page_name').easyAutocomplete(autocomplete_options);
+                    bindAutocomplete();
                 }
             }
         });
@@ -167,13 +182,47 @@ body, html {
 
         autocomplete_options = {
                 data: page_list,
+                template: {
+                    type: "custom",
+                    method: function(value, item) {
+                        return value + '<button class="delete_page" data-page="' + item + '">&#x2716;</button>';
+                    }
+                },
                 list: {
-                    match: {
-                        enabled: false
+                    onChooseEvent: function() {
+                        page_name = $('#page_name').val();
                     }
                 }
         };
-        $("#page_name").easyAutocomplete(autocomplete_options);
+        $('#page_name').easyAutocomplete(autocomplete_options);
+        bindAutocomplete();
+
+        function bindAutocomplete() {
+            $('.easy-autocomplete *').click(function(evt) {
+                if ($(evt.target).is('.delete_page')) {
+                    // this is a bit of a hack
+                    evt.stopPropagation();
+                    var p = $(evt.target).data('page');
+                    if (confirm("You're about to delete " + p + " forever.")) {
+                        page_list = Cookies.getJSON('texpreview_pagelist') || ['default'];
+                        page_list.splice(page_list.indexOf(p), 1);
+                        Cookies.set('texpreview_pagelist', page_list);
+                        autocomplete_options.data = page_list;
+                        $('#page_name').easyAutocomplete(autocomplete_options);
+                        bindAutocomplete();
+                        Cookies.remove('texpreview_content_' + p);
+
+                        location.reload();
+                    }
+                }
+            });
+        }
+
+        $('#page_name').keypress(function (e) {
+            if (e.which == 13) {
+                page_name = $('#page_name').val();
+            }
+        });
 
         setInterval(function() {
             var content = Cookies.get('texpreview_content_' + page_name);
@@ -185,15 +234,6 @@ body, html {
                 editor.session.selection.fromJSON(pos);
             }
         }, 250);
-
-        setInterval(function() {
-            page_list = Cookies.getJSON('texpreview_pagelist') || ['default'];
-            autocomplete_options.data = page_list;
-        }, 2000);
-
-        $('#page_name').change(function() {
-            page_name = $('#page_name').val();
-        });
 
     });
     </script>
