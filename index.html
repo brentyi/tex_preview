@@ -171,7 +171,7 @@ button.delete_page:hover {
                 page_list = Cookies.getJSON('texpreview_pagelist') || ['default'];
                 if (page_list.indexOf(page_name) == -1) {
                     page_list.push(page_name);
-                    Cookies.set('texpreview_pagelist', page_list);
+                    Cookies.set('texpreview_pagelist', page_list, {expires: 365});
                     autocomplete_options.data = page_list;
                     $('#page_name').easyAutocomplete(autocomplete_options);
                     bindAutocomplete();
@@ -206,7 +206,7 @@ button.delete_page:hover {
                     if (confirm("You're about to delete " + p + " forever.")) {
                         page_list = Cookies.getJSON('texpreview_pagelist') || ['default'];
                         page_list.splice(page_list.indexOf(p), 1);
-                        Cookies.set('texpreview_pagelist', page_list);
+                        Cookies.set('texpreview_pagelist', page_list), {expires: 365};
                         autocomplete_options.data = page_list;
                         $('#page_name').easyAutocomplete(autocomplete_options);
                         bindAutocomplete();
