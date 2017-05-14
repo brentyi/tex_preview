@@ -91,6 +91,10 @@ body, html {
     color: #888;
     padding: 0.2em;
     font-size: 1.5em;
+    opacity: 0.5;
+}
+#page_name:focus, #page_name:hover {
+    opacity: 1.0;
 }
 button.delete_page {
     position: absolute;
@@ -120,7 +124,7 @@ button.delete_page:hover {
     <script>
     $(function() {
         var page_list = Cookies.getJSON('texpreview_pagelist') || ['default'];
-        var page_name = page_list[0];
+        var page_name = Cookies.get('texpreview_currentpage') || page_list[0];
         $('#page_name').val(page_name);
         var autocomplete_options;
 
@@ -190,7 +194,7 @@ button.delete_page:hover {
                 },
                 list: {
                     onChooseEvent: function() {
-                        page_name = $('#page_name').val();
+                        updatePageName();
                     }
                 }
         };
@@ -218,10 +222,25 @@ button.delete_page:hover {
             });
         }
 
-        $('#page_name').keypress(function (e) {
-            if (e.which == 13) {
-                page_name = $('#page_name').val();
+        function updatePageName() {
+            var new_page_name = $('#page_name').val();
+            if (new_page_name) {
+                page_name = new_page_name;
+                Cookies.set('texpreview_currentpage', new_page_name);
+                editor.focus();
+                return true;
             }
+            return false;
+        }
+
+        $('#page_name').keypress(function (e){
+            if (e.which == 13) {
+                updatePageName();
+            }
+        });
+
+        $('#page_name').blur(function() {
+            $('#page_name').val(page_name);
         });
 
         setInterval(function() {
