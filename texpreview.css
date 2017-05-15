@@ -1,0 +1,99 @@
+* {
+    box-sizing: border-box;
+}
+body, html {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+}
+#editor_wrapper {
+    position: absolute;
+    top: 50%;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+#editor {
+    width: 100%;
+    height: 100%;
+    font-size: 1.1em;
+}
+#output_wrapper {
+    position: absolute;
+    top: 0;
+    bottom: 50%;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 1.2em;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+#output {
+    margin: auto;
+    padding: 2em;
+    width: 100%;
+    position: absolute;
+}
+#error {
+    color: #e00;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 1em;
+    text-align: center;
+}
+
+/* nicer katex fractions */
+.mfrac{
+    font-size: 0.8em;
+}
+
+@media (min-width: 960px) {
+    #editor_wrapper {
+        top: 0;
+        left: 50%;
+    }
+    #output_wrapper {
+        bottom: 0;
+        right: 50%;
+    }
+}
+
+.easy-autocomplete {
+    position: absolute;
+    z-index: 999;
+    right: 2em;
+    bottom: 2em;
+}
+.easy-autocomplete * {
+    font-family: sans-serif;
+}
+.easy-autocomplete-container {
+    bottom: 2em;
+}
+#page_name {
+    border: 1px solid #ccc;
+    color: #888;
+    padding: 0.2em;
+    font-size: 1.5em;
+    opacity: 0.5;
+}
+#page_name:focus, #page_name:hover {
+    opacity: 1.0;
+}
+button.delete_page {
+    position: absolute;
+    z-index: 9999;
+    right: 0.5em;
+    background: none;
+    border: 0;
+    color: #700;
+    cursor: pointer;
+    padding: 0;
+}
+button.delete_page:hover {
+    color: #a00;
+}
