@@ -1,16 +1,16 @@
 $(function() {
-    var page_list = Cookies.getJSON('texpreview_pagelist') || ['default'];
-    var page_name = Cookies.get('texpreview_currentpage') || page_list[0];
+    var page_list = JSON.parse(localStorage.texpreview_pagelist) || ['default'];
+    var page_name = localStorage.texpreview_currentpage || page_list[0];
     $('#page_name').val(page_name);
     var autocomplete_options;
 
     var editor = ace.edit("editor");
     editor.setTheme("ace/theme/monokai");
-    var content = Cookies.get('texpreview_content_' + page_name);
-    if (content == undefined) {
+    var content = JSON.parse(localStorage.texpreview_content);
+    if (content[page_name] == undefined) {
         editor.setValue('\\begin{aligned}\n    a^2 + b^2 &= c^2\\\\\n\\end{aligned}', -1);
     } else {
-        editor.setValue(content, -1);
+        editor.setValue(content[page_name], -1);
     }
 
     editor.getSession().setMode("ace/mode/latex");
@@ -26,8 +26,8 @@ $(function() {
 
     var render = function() {
         try {
-            var content = editor.getValue();
-            var html = katex.renderToString(content, {
+            content[page_name] = editor.getValue();
+            var html = katex.renderToString(content[page_name], {
                 displayMode: true,
                 throwOnError: false
             });
@@ -44,14 +44,15 @@ $(function() {
     render();
 
     editor.on('change', function(data) {
-        Cookies.set('texpreview_content_' + page_name, editor.getValue(), {expires: 365});
+        content[page_name] = editor.getValue();
+        localStorage.texpreview_content = JSON.stringify(content);
         render();
 
         if (page_list.indexOf(page_name) == -1) {
-            page_list = Cookies.getJSON('texpreview_pagelist') || ['default'];
+            page_list = JSON.parse(localStorage.texpreview_pagelist)
             if (page_list.indexOf(page_name) == -1) {
                 page_list.push(page_name);
-                Cookies.set('texpreview_pagelist', page_list, {expires: 365});
+                localStorage.texpreview_pagelist = JSON.stringify(page_list);
                 autocomplete_options.data = page_list;
                 $('#page_name').easyAutocomplete(autocomplete_options);
                 bindAutocomplete();
@@ -84,15 +85,16 @@ $(function() {
                 evt.stopPropagation();
                 var p = $(evt.target).data('page');
                 if (confirm("You're about to delete " + p + " forever.")) {
-                    page_list = Cookies.getJSON('texpreview_pagelist') || ['default'];
                     page_list.splice(page_list.indexOf(p), 1);
-                    Cookies.set('texpreview_pagelist', page_list), {expires: 365};
-                    autocomplete_options.data = page_list;
-                    $('#page_name').easyAutocomplete(autocomplete_options);
-                    bindAutocomplete();
-                    Cookies.remove('texpreview_content_' + p);
+                    content[p] = undefined;
+                    localStorage.texpreview_pagelist = JSON.stringify(page_list);
+                    localStorage.texpreview_content = JSON.stringify(content);
+                    localStorage.texpreview_currentpage = page_list[0];
 
                     location.reload();
+                    // autocomplete_options.data = page_list;
+                    // $('#page_name').easyAutocomplete(autocomplete_options);
+                    // bindAutocomplete();
                 }
             }
         });
@@ -102,7 +104,7 @@ $(function() {
         var new_page_name = $('#page_name').val();
         if (new_page_name) {
             page_name = new_page_name;
-            Cookies.set('texpreview_currentpage', new_page_name);
+            localStorage.texpreview_currentpage = new_page_name;
             editor.focus();
             return true;
         }
@@ -120,14 +122,14 @@ $(function() {
     });
 
     setInterval(function() {
-        var content = Cookies.get('texpreview_content_' + page_name);
-        if (content == undefined) {
+        content = JSON.parse(localStorage.texpreview_content);
+        if (content[page_name] == undefined) {
             editor.setValue('\\begin{aligned}\n    a^2 + b^2 &= c^2\\\\\n\\end{aligned}', -1);
-        } else if (content !== editor.getValue()) {
+        } else if (content[page_name] !== editor.getValue()) {
             var pos = editor.session.selection.toJSON();
-            editor.session.setValue(content);
+            editor.session.setValue(content[page_name]);
             editor.session.selection.fromJSON(pos);
         }
-    }, 250);
+    }, 1000);
 
 });
