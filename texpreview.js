@@ -1,12 +1,12 @@
 $(function() {
-    var page_list = JSON.parse(localStorage.texpreview_pagelist) || ['default'];
+    var page_list = parseJSON(localStorage.texpreview_pagelist, ['default']);
     var page_name = localStorage.texpreview_currentpage || page_list[0];
     $('#page_name').val(page_name);
     var autocomplete_options;
 
     var editor = ace.edit("editor");
     editor.setTheme("ace/theme/monokai");
-    var content = JSON.parse(localStorage.texpreview_content);
+    var content = parseJSON(localStorage.texpreview_content, {});
     if (content[page_name] == undefined) {
         editor.setValue('\\begin{aligned}\n    a^2 + b^2 &= c^2\\\\\n\\end{aligned}', -1);
     } else {
@@ -49,7 +49,7 @@ $(function() {
         render();
 
         if (page_list.indexOf(page_name) == -1) {
-            page_list = JSON.parse(localStorage.texpreview_pagelist)
+            page_list = parseJSON(localStorage.texpreview_pagelist, ['default'])
             if (page_list.indexOf(page_name) == -1) {
                 page_list.push(page_name);
                 localStorage.texpreview_pagelist = JSON.stringify(page_list);
@@ -122,9 +122,11 @@ $(function() {
     });
 
     setInterval(function() {
-        content = JSON.parse(localStorage.texpreview_content);
+        content = parseJSON(localStorage.texpreview_content, {});
         if (content[page_name] == undefined) {
-            editor.setValue('\\begin{aligned}\n    a^2 + b^2 &= c^2\\\\\n\\end{aligned}', -1);
+            content[page_name] = '\\begin{aligned}\n    a^2 + b^2 &= c^2\\\\\n\\end{aligned}';
+            localStorage.texpreview_content = JSON.stringify(content);
+            //editor.setValue(content[page_name], -1);
         } else if (content[page_name] !== editor.getValue()) {
             var pos = editor.session.selection.toJSON();
             editor.session.setValue(content[page_name]);
@@ -132,4 +134,9 @@ $(function() {
         }
     }, 1000);
 
+    function parseJSON(value, def="") {
+        if (value)
+            return JSON.parse(value);
+        return def;
+    }
 });
