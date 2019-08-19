@@ -70,8 +70,18 @@ $(function() {
                 }
             },
             list: {
-                onChooseEvent: updatePageName
-            }
+                onChooseEvent: updatePageName,
+                showAnimation: {
+                    type: "slide",
+                    time: 400,
+                    callback: function() {}
+                },
+                hideAnimation: {
+                    type: "fade",
+                    time: 400,
+                    callback: function() {}
+                }
+            },
     };
     $('#page_name').easyAutocomplete(autocomplete_options);
 
@@ -115,6 +125,7 @@ $(function() {
             }
         })
         .focus(function () {
+            // Make the autocomplete list appear
             $("#page_name").attr('value', '');
             $("#page_name").triggerHandler(jQuery.Event("keyup", { keyCode: 65, which: 65}));
             $("#page_name").trigger('change');
