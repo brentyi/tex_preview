@@ -7,14 +7,18 @@ $(() => {
      * Global state module
      */
     let State = (() => {
-        // State variable: list of page names
-        let page_list = parseJSON(localStorage.texpreview_pagelist, ['default']);
-
-        // State variable: name of current page
-        let current_page_name = localStorage.texpreview_currentpage || page_list[0];
+        const DEFAULT_CONTENT = '\\begin{aligned}\n    a^2 + b^2 &= c^2\\\\\n\\end{aligned}';
 
         // State variable: map from page names to page content
         let content_map = parseJSON(localStorage.texpreview_content, {});
+        if (Object.keys(content_map).length == 0) {
+            content_map = {"default": DEFAULT_CONTENT}
+        }
+
+        // State variable: name of current page
+        let current_page_name = localStorage.texpreview_currentpage;
+        if (Object.keys(content_map).indexOf(current_page_name) === -1)
+            current_page_name = Object.keys(content_map)[0]
 
         // What happens when a new page is created?
         let new_page_callback = undefined;
@@ -22,7 +26,7 @@ $(() => {
         // Expose interface
         return {
             onNewPage: (callback) => { new_page_callback = callback; },
-            getPageList: () => page_list,
+            getPageList: () => Object.keys(content_map),
             getCurrentPageName: () => current_page_name,
             setCurrentPageName: (new_page_name) => {
                 current_page_name = new_page_name;
@@ -31,35 +35,34 @@ $(() => {
             getCurrentPageContent: () => content_map[current_page_name],
             getPageContent: (page_name) => content_map[page_name],
             setPageContent: (page_name, content) => {
+                // Does the page exist yet?
+                let new_page = false;
+                if (content_map[page_name] == undefined) {
+                    new_page = true;
+                }
+
                 // Update content
                 content_map[page_name] = content;
                 localStorage.texpreview_content = JSON.stringify(content_map);
 
-                // Update list of page names if needed
-                if (page_list.indexOf(page_name) === -1) {
-                    page_list = parseJSON(localStorage.texpreview_pagelist, ['default'])
-                    if (page_list.indexOf(page_name) === -1) {
-                        page_list.push(page_name);
-                        localStorage.texpreview_pagelist = JSON.stringify(page_list);
-                        new_page_callback();
-                    }
-                }
+                // Call new page callback if needed
+                if (new_page)
+                    new_page_callback();
             },
             reloadContent: function () {
                 content_map = parseJSON(localStorage.texpreview_content, {});
-                if (this.getCurrentPageContent() === undefined) {
-                    State.setCurrentPageContent('\\begin{aligned}\n    a^2 + b^2 &= c^2\\\\\n\\end{aligned}');
-                    localStorage.texpreview_content = JSON.stringify(content_map);
-                }
             },
             setCurrentPageContent: function(content) { this.setPageContent(current_page_name, content); },
             deletePage: (page_name) => {
-                page_list.splice(page_list.indexOf(page_name), 1);
-                content_map[page_name] = undefined;
+                // Re-assign page name
+                if (current_page_name === page_name) {
+                    current_page_name = Object.keys(content_map)[0] || "default";
+                    localStorage.texpreview_currentpage = current_page_name;
+                }
 
-                localStorage.texpreview_pagelist = JSON.stringify(page_list);
+                // Delete content
+                delete content_map[page_name];
                 localStorage.texpreview_content = JSON.stringify(content_map);
-                localStorage.texpreview_currentpage = page_list[0];
             }
         };
     })();
@@ -199,6 +202,9 @@ $(() => {
     State.onNewPage(() => {
         // Reset the page selector when a new page appears
         PageSelector.setup(State.getCurrentPageName(), State.getPageList());
+
+        // Assign content to whatever's in the editor
+        State.setCurrentPageContent(Editor.getContent());
     });
     PageSelector.onDelete((to_delete) => {
         // Delete a page
@@ -233,15 +239,13 @@ $(() => {
         }
     });
 
-
     // Pull in initial content
-    State.reloadContent();
     Editor.setContent(State.getCurrentPageContent());
 
     // Poll for updated content (eg from other tabs/windows)
     setInterval(function() {
         State.reloadContent();
-        if (State.getCurrentPageContent() !== Editor.getContent()) {
+        if (State.getCurrentPageContent() !== undefined && State.getCurrentPageContent() !== Editor.getContent()) {
             Editor.setContent(State.getCurrentPageContent());
         }
     }, 1000);
