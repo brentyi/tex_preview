@@ -70,12 +70,13 @@ $(function() {
                 }
             },
             list: {
-                onChooseEvent: function() {
-                    updatePageName();
-                }
+                onChooseEvent: updatePageName
             }
     };
     $('#page_name').easyAutocomplete(autocomplete_options);
+
+    // Unbind easyAutocomplete's "Enter" keydown event handler (we have our own above)
+    $('#page_name').unbind('keydown');
     bindAutocomplete();
 
     function bindAutocomplete() {
@@ -92,9 +93,6 @@ $(function() {
                     localStorage.texpreview_currentpage = page_list[0];
 
                     location.reload();
-                    // autocomplete_options.data = page_list;
-                    // $('#page_name').easyAutocomplete(autocomplete_options);
-                    // bindAutocomplete();
                 }
             }
         });
@@ -105,21 +103,23 @@ $(function() {
         if (new_page_name) {
             page_name = new_page_name;
             localStorage.texpreview_currentpage = new_page_name;
-            editor.focus();
             return true;
         }
         return false;
     }
 
-    $('#page_name').keypress(function (e){
-        if (e.which == 13) {
-            updatePageName();
-        }
-    });
-
-    $('#page_name').blur(function() {
-        $('#page_name').val(page_name);
-    });
+    $('#page_name')
+        .keypress(function (e){
+            if (e.which == 13) {
+                editor.focus();
+            }
+        })
+        .focus(function () {
+            $("#page_name").attr('value', '');
+            $("#page_name").triggerHandler(jQuery.Event("keyup", { keyCode: 65, which: 65}));
+            $("#page_name").trigger('change');
+        })
+        .blur(updatePageName);
 
     setInterval(function() {
         content = parseJSON(localStorage.texpreview_content, {});

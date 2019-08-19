@@ -81,7 +81,7 @@ body, html {
     font-size: 1.5em;
     opacity: 0.5;
 }
-#page_name:focus, #page_name:hover {
+#page_name:focus {
     opacity: 1.0;
 }
 button.delete_page {
