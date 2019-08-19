@@ -120,25 +120,26 @@ $(() => {
 
         // Configure our autocomplete plugin
         let autocomplete_options = {
-                template: {
-                    type: "custom",
-                    method: function(value, item) {
-                        return value + '<button class="delete_page" data-page="' + item + '">&#x2716;</button>';
-                    }
+            template: {
+                type: "custom",
+                method: function(value, item) {
+                    return value + '<button class="delete_page" data-page="' + item + '">&#x2716;</button>';
+                }
+            },
+            list: {
+                onChooseEvent: updatePageName,
+                showAnimation: {
+                    type: "slide",
+                    time: 400,
+                    callback: function() {}
                 },
-                list: {
-                    onChooseEvent: updatePageName,
-                    showAnimation: {
-                        type: "slide",
-                        time: 400,
-                        callback: function() {}
-                    },
-                    hideAnimation: {
-                        type: "fade",
-                        time: 400,
-                        callback: function() {}
-                    }
-                },
+                hideAnimation: {
+                    type: "fade",
+                    time: 400,
+                    callback: function() {}
+                }
+            },
+            highlightPhrase: false
         };
 
         // What happens when we delete a page?
