@@ -46,13 +46,14 @@ $(() => {
                 localStorage.texpreview_content = JSON.stringify(content_map);
 
                 // Call new page callback if needed
-                if (new_page)
-                    new_page_callback();
+                new_page && new_page_callback && new_page_callback();
             },
-            reloadContent: function () {
+            reloadContent: () => {
                 content_map = parseJSON(localStorage.texpreview_content, {});
             },
-            setCurrentPageContent: function(content) { this.setPageContent(current_page_name, content); },
+            setCurrentPageContent: function(content) {
+                this.setPageContent(current_page_name, content)
+            },
             deletePage: (page_name) => {
                 // Re-assign page name
                 if (current_page_name === page_name) {
@@ -63,7 +64,7 @@ $(() => {
                 // Delete content
                 delete content_map[page_name];
                 localStorage.texpreview_content = JSON.stringify(content_map);
-            }
+            },
         };
     })();
 
@@ -86,20 +87,14 @@ $(() => {
 
         // Expose interface
         return {
-            getContent: () => {
-                return editor.getValue();
-            },
+            getContent: () => editor.getValue(),
             setContent: (content) => {
                 let pos = editor.session.selection.toJSON();
                 editor.session.setValue(content);
                 editor.session.selection.fromJSON(pos);
             },
-            onChange: (callback) => {
-                editor.on('change', callback);
-            },
-            focus: () => {
-                editor.focus();
-            }
+            onChange: (callback) => editor.on('change', callback),
+            focus: () => editor.focus(),
         };
     })();
 
@@ -122,7 +117,7 @@ $(() => {
         let autocomplete_options = {
             template: {
                 type: "custom",
-                method: function(value, item) {
+                method: (value, item) => {
                     return value + '<button class="delete_page" data-page="' + item + '">&#x2716;</button>';
                 }
             },
@@ -131,12 +126,12 @@ $(() => {
                 showAnimation: {
                     type: "slide",
                     time: 400,
-                    callback: function() {}
+                    callback: () => {}
                 },
                 hideAnimation: {
                     type: "fade",
                     time: 400,
-                    callback: function() {}
+                    callback: () => {}
                 }
             },
             highlightPhrase: false
@@ -158,13 +153,13 @@ $(() => {
                 // Detach default easyAutocomplete bindings, and add some of our own
                 $('#page_name').off('keydown');
                 $('#page_name')
-                    .keydown(function (e){
+                    .keydown((e) => {
                         // Set page name when we hit enter
                         if (e.which === 13) {
                             updatePageName()
                         }
                     })
-                    .focus(function () {
+                    .focus(() => {
                         // Make the autocomplete list appear when we focus
                         $("#page_name").attr('value', '');
                         $("#page_name").triggerHandler(jQuery.Event("keyup", { keyCode: 65, which: 65}));
@@ -177,13 +172,13 @@ $(() => {
 
                 // Event handler for "delete page" button
                 $('.easy-autocomplete').off('click');
-                $('.easy-autocomplete *').click(function(evt) {
+                $('.easy-autocomplete *').click((evt) => {
                     // This wildcard + condition combo feels hacky but is important for event propagation order
                     if ($(evt.target).is('.delete_page')) {
                         evt.stopPropagation();
                         let p = $(evt.target).data('page');
                         if (confirm("You're about to delete " + p + " forever.")) {
-                            delete_callback(p);
+                            delete_callback && delete_callback(p);
                         }
                     }
                 });
@@ -193,11 +188,12 @@ $(() => {
             },
             onDelete: (callback) => {
                 delete_callback = callback;
-            }
+            },
         };
     })();
 
     // Link modules together
+
     PageSelector.setup(State.getCurrentPageName(), State.getPageList());
 
     State.onNewPage(() => {
@@ -244,7 +240,7 @@ $(() => {
     Editor.setContent(State.getCurrentPageContent());
 
     // Poll for updated content (eg from other tabs/windows)
-    setInterval(function() {
+    setInterval(() => {
         State.reloadContent();
         if (State.getCurrentPageContent() !== undefined && State.getCurrentPageContent() !== Editor.getContent()) {
             Editor.setContent(State.getCurrentPageContent());
