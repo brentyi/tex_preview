@@ -20,6 +20,9 @@ $(() => {
         if (Object.keys(content_map).indexOf(current_page_name) === -1)
             current_page_name = Object.keys(content_map)[0]
 
+        // Set page title
+        document.title = "tex: " + current_page_name;
+
         // What happens when a new page is created?
         let new_page_callback = undefined;
 
@@ -31,6 +34,9 @@ $(() => {
             setCurrentPageName: (new_page_name) => {
                 current_page_name = new_page_name;
                 localStorage.texpreview_currentpage = new_page_name;
+
+                // Update page title
+                document.title = "tex: " + current_page_name;
             },
             getCurrentPageContent: () => content_map[current_page_name],
             getPageContent: (page_name) => content_map[page_name],
