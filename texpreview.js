@@ -227,8 +227,7 @@ $(() => {
         State.setCurrentPageContent(Editor.getContent());
         try {
             let html = katex.renderToString(State.getCurrentPageContent(), {
-                displayMode: true,
-                throwOnError: false
+                displayMode: true
             });
             $('#error').text('');
             $('#output').html(html);
