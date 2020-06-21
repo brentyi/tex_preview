@@ -99,10 +99,8 @@ $(() => {
     $("#vim_mode").on("change", function () {
       localStorage.vimMode = this.checked;
       if (this.checked) {
-        console.log("vim mode");
         editor.setKeyboardHandler("ace/keyboard/vim");
       } else {
-        console.log("sublime mode");
         editor.setKeyboardHandler("ace/keyboard/sublime");
       }
     });
