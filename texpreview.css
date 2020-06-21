@@ -1,12 +1,15 @@
 * {
     box-sizing: border-box;
 }
-body, html {
+
+body,
+html {
     padding: 0;
     margin: 0;
     height: 100%;
     width: 100%;
 }
+
 #editor_wrapper {
     position: absolute;
     top: 50%;
@@ -14,11 +17,13 @@ body, html {
     left: 0;
     right: 0;
 }
+
 #editor {
     width: 100%;
     height: 100%;
     font-size: 1.1em;
 }
+
 #output_wrapper {
     position: absolute;
     top: 0;
@@ -30,12 +35,14 @@ body, html {
     overflow-y: scroll;
     overflow-x: hidden;
 }
+
 #output {
     margin: auto;
     padding: 2em;
     width: 100%;
     position: absolute;
 }
+
 #error {
     color: #e00;
     position: absolute;
@@ -47,7 +54,7 @@ body, html {
 }
 
 /* nicer katex fractions */
-.mfrac{
+.mfrac {
     font-size: 0.8em;
 }
 
@@ -56,6 +63,7 @@ body, html {
         top: 0;
         left: 50%;
     }
+
     #output_wrapper {
         bottom: 0;
         right: 50%;
@@ -68,22 +76,27 @@ body, html {
     right: 2em;
     bottom: 2em;
 }
+
 .easy-autocomplete * {
     font-family: sans-serif;
     font-size: 1.5rem;
 }
+
 .easy-autocomplete-container {
     bottom: 1em;
 }
+
 #page_name {
     border: 1px solid #ccc;
     color: #888;
     padding: 0.2em;
     opacity: 0.5;
 }
+
 #page_name:focus {
     opacity: 1.0;
 }
+
 button.delete_page {
     position: absolute;
     z-index: 9999;
@@ -94,6 +107,7 @@ button.delete_page {
     cursor: pointer;
     padding: 0;
 }
+
 button.delete_page:hover {
     color: #a00;
 }
