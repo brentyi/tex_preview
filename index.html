@@ -9,7 +9,10 @@
 
 <body>
     <section id="editor_wrapper">
-        <input id="page_name" value="default" />
+        <div id="hud">
+            <input id="page_name" type="text" value="default" />
+            <label for="vim_mode">Vim bindings: <input id="vim_mode" type="checkbox" /></label>
+        </div>
         <div id="editor"></div>
     </section>
     <section id="output_wrapper">

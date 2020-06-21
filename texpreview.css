@@ -8,6 +8,7 @@ html {
     margin: 0;
     height: 100%;
     width: 100%;
+    font-family: sans-serif;
 }
 
 #editor_wrapper {
@@ -70,15 +71,17 @@ html {
     }
 }
 
-.easy-autocomplete {
+#hud {
+    text-align: right;
     position: absolute;
     z-index: 999;
     right: 2em;
     bottom: 2em;
 }
 
-.easy-autocomplete * {
-    font-family: sans-serif;
+.easy-autocomplete *,
+#page_name {
+    text-align: left;
     font-size: 1.5rem;
 }
 
@@ -91,10 +94,27 @@ html {
     color: #888;
     padding: 0.2em;
     opacity: 0.5;
+    display: block;
 }
 
 #page_name:focus {
     opacity: 1.0;
+}
+
+#hud label {
+    margin-top: 0.4em;
+    color: #666;
+    display: inline-block;
+    padding-right: 10px;
+    white-space: nowrap;
+}
+
+#hud input {
+    vertical-align: middle;
+}
+
+#hud label span {
+    vertical-align: middle;
 }
 
 button.delete_page {

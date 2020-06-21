@@ -1,8 +1,10 @@
-// JSON parsing helper
-let parseJSON = (value, default_output) =>
-  value ? JSON.parse(value) : default_output;
-
 $(() => {
+  /*
+   * JSON parsing helper
+   */
+  let parseJSON = (value, default_output) =>
+    value ? JSON.parse(value) : default_output;
+
   /*
    * Global state module
    */
@@ -85,7 +87,6 @@ $(() => {
     let editor = ace.edit("editor");
     editor.setTheme("ace/theme/monokai");
     editor.getSession().setMode("ace/mode/latex");
-    editor.setKeyboardHandler("ace/keyboard/vim");
     editor.setOptions({
       showInvisibles: true,
       highlightSelectedWord: true,
@@ -93,6 +94,23 @@ $(() => {
     });
     editor.setBehavioursEnabled(false);
     editor.renderer.setScrollMargin(15, 15);
+
+    // Vim mode toggle handler
+    $("#vim_mode").on("change", function () {
+      localStorage.vimMode = this.checked;
+      if (this.checked) {
+        console.log("vim mode");
+        editor.setKeyboardHandler("ace/keyboard/vim");
+      } else {
+        console.log("sublime mode");
+        editor.setKeyboardHandler("ace/keyboard/sublime");
+      }
+    });
+
+    // Read Vim mode from localStorage, default to false
+    $("#vim_mode")
+      .prop("checked", parseJSON(localStorage.vimMode, false))
+      .trigger("change");
 
     // Expose interface
     return {
