@@ -44,7 +44,6 @@ $(() => {
         document.title = "tex: " + current_page_name;
       },
       getCurrentPageContent: () => content_map[current_page_name],
-      getPageContent: (page_name) => content_map[page_name],
       setPageContent: (page_name, content) => {
         // Does the page exist yet?
         let new_page = false;
@@ -59,11 +58,11 @@ $(() => {
         // Call new page callback if needed
         new_page && new_page_callback && new_page_callback();
       },
-      reloadContent: () => {
-        content_map = parseJSON(localStorage.texpreview_content, {});
-      },
       setCurrentPageContent: function (content) {
         this.setPageContent(current_page_name, content);
+      },
+      reloadContent: () => {
+        content_map = parseJSON(localStorage.texpreview_content, {});
       },
       deletePage: (page_name) => {
         // Re-assign page name
@@ -110,15 +109,25 @@ $(() => {
       .prop("checked", parseJSON(localStorage.vimMode, false))
       .trigger("change");
 
+    // State variables for managing content set/get race condition
+    let set_flag = false;
+    let change_callback;
+
     // Expose interface
     return {
       getContent: () => editor.getValue(),
       setContent: (content) => {
+        set_flag = true;
         let pos = editor.session.selection.toJSON();
         editor.session.setValue(content);
         editor.session.selection.fromJSON(pos);
+        set_flag = false;
+        change_callback();
       },
-      onChange: (callback) => editor.on("change", callback),
+      onChange: (callback) => {
+        change_callback = callback;
+        editor.on("change", () => !set_flag && callback());
+      },
       focus: () => editor.focus(),
     };
   })();
@@ -170,13 +179,18 @@ $(() => {
     // What happens when we delete a page?
     let delete_callback = undefined;
 
+    // List of pages
+    let selector_page_list = [];
+
     // Expose interface
     return {
+      getPageList: () => selector_page_list,
       setup: (page_name, page_list) => {
         // Set current page name
         $("#page_name").val(page_name);
 
         // Initialize easyAutocomplete with the given page list
+        selector_page_list = page_list;
         autocomplete_options.data = page_list;
         $("#page_name").easyAutocomplete(autocomplete_options);
 
@@ -225,7 +239,6 @@ $(() => {
   })();
 
   // Link modules together
-
   PageSelector.setup(State.getCurrentPageName(), State.getPageList());
 
   State.onNewPage(() => {
@@ -238,7 +251,7 @@ $(() => {
   PageSelector.onDelete((to_delete) => {
     // Delete a page
     State.deletePage(to_delete);
-    location.reload();
+    PageSelector.setup(State.getCurrentPageName(), State.getPageList());
   });
   PageSelector.onSelect((new_page_name) => {
     // Select a different page
@@ -271,13 +284,18 @@ $(() => {
   Editor.setContent(State.getCurrentPageContent());
 
   // Poll for updated content (eg from other tabs/windows)
-  setInterval(() => {
+  $(window).on("storage", () => {
     State.reloadContent();
+
+    if (State.getPageList().length != PageSelector.getPageList().length) {
+      PageSelector.setup(State.getCurrentPageName(), State.getPageList());
+    }
+
     if (
       State.getCurrentPageContent() !== undefined &&
       State.getCurrentPageContent() !== Editor.getContent()
     ) {
       Editor.setContent(State.getCurrentPageContent());
     }
-  }, 1000);
+  });
 });
